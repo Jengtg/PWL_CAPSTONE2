@@ -11,12 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
+            // $table->unsignedInteger('id')->primary(); // Baris lama yang dikomentari (opsional)
+            $table->id()->primary();                             // Menggantikan baris di atas, ini akan membuat primary key auto-increment
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('role')->default('guest'); // Kolom role Anda
             $table->rememberToken();
             $table->timestamps();
         });
