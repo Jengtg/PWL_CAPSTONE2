@@ -12,11 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('status', function (Blueprint $table) {
-            $table->unsignedTinyInteger('id')->primary();
+            // SQL had INT(1) UNSIGNED. unsignedTinyInteger is 0-255.
+            // If it's just a small number of statuses but you used INT(1) as a standard int,
+            // then unsignedInteger('id') is fine. For this example, assuming few statuses.
+            $table->unsignedTinyInteger('id'); // For INT(1) UNSIGNED
+            $table->primary('id');
+            // If you want this to be auto-incrementing (though unusual for status IDs typically seeded), use:
+            // $table->tinyIncrements('id');
+            // Or if INT(1) was meant as a standard INT but just small:
+            // $table->unsignedInteger('id'); $table->primary('id');
+
             $table->string('name')->unique();
             $table->timestamps();
         });
-
     }
 
     /**

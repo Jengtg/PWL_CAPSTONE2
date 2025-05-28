@@ -12,25 +12,22 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('files', function (Blueprint $table) {
-            $table->id(); // Saran: Gunakan ini jika ingin ID auto-increment
+            $table->unsignedInteger('id'); // Was INT(10) in last SQL
+            $table->primary('id');
+            // If you want this to be auto-incrementing, use:
+            // $table->increments('id');
 
             $table->string('file_name');
             $table->string('file_path');
-            $table->string('file_type')->nullable(); // Saran: Ubah ke string untuk MIME type
-
-            // PERUBAHAN PENTING PADA TIPE DATA FOREIGN KEY:
-            $table->unsignedBigInteger('event_register_user_id')->nullable(); // Agar cocok dengan event_register.user_id
-            $table->unsignedInteger('event_register_event_id')->nullable();  // Biarkan jika event_register.event_id adalah unsignedInteger
-            
+            $table->binary('file_type'); // In SQL it was MEDIUMBLOB
+            $table->unsignedInteger('event_register_user_id')->nullable();
+            $table->unsignedInteger('event_register_event_id')->nullable();
             $table->timestamps();
 
-            $table->foreign(
-                ['event_register_user_id', 'event_register_event_id'],
-                'files_event_reg_fk' // Contoh nama kustom yang lebih pendek (opsional tapi baik)
-            )
-            ->references(['user_id', 'event_id'])->on('event_register')
-            ->onDelete('set null')
-            ->onUpdate('cascade');
+            $table->foreign(['event_register_user_id', 'event_register_event_id'], 'files_event_register_fk')
+                  ->references(['user_id', 'event_id'])->on('event_register')
+                  ->onDelete('set null')
+                  ->onUpdate('cascade');
         });
     }
 

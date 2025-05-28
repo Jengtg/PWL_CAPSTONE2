@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('events', function (Blueprint $table) {
-            $table->unsignedInteger('id')->primary();
+            $table->increments('id'); // INT(10) UNSIGNED AUTO_INCREMENT
             $table->string('title');
             $table->text('description');
             $table->date('start_date');

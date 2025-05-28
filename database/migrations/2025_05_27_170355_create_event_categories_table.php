@@ -12,7 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('event_categories', function (Blueprint $table) {
-            $table->unsignedInteger('id')->primary();
+            $table->unsignedInteger('id');
+            $table->primary('id');
+            // If you want this to be auto-incrementing, use:
+            // $table->increments('id');
+
             $table->string('name')->unique();
             $table->timestamps();
         });

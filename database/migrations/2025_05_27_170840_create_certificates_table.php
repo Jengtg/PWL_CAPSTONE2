@@ -12,26 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('certificates', function (Blueprint $table) {
-            // Sebaiknya gunakan $table->id(); jika ingin ID auto-increment standar Laravel
-            // Tapi jika Anda kelola manual dan yakin unik, unsignedInteger bisa saja.
-            $table->unsignedInteger('id')->primary(); 
+            $table->unsignedInteger('id');
+            $table->primary('id');
+            // If you want this to be auto-incrementing, use:
+            // $table->increments('id');
 
-            // PERUBAHAN UTAMA DI SINI:
-            $table->unsignedBigInteger('event_register_user_id'); // Agar cocok dengan event_register.user_id (yang seharusnya unsignedBigInteger)
-            
-            $table->unsignedInteger('event_register_event_id');  // Biarkan ini jika event_register.event_id adalah unsignedInteger
-
-            // Disarankan menambahkan kolom untuk path file sertifikat
-            // $table->string('file_path')->nullable(); 
+            $table->unsignedInteger('event_register_user_id');
+            $table->unsignedInteger('event_register_event_id');
             $table->timestamps();
 
-            $table->foreign(
-                ['event_register_user_id', 'event_register_event_id'],
-                'fk_certificates_event_registration' 
-            )
-            ->references(['user_id', 'event_id'])->on('event_register')
-            ->onDelete('cascade')
-            ->onUpdate('cascade');
+            $table->foreign(['event_register_user_id', 'event_register_event_id'], 'certificates_event_register_fk')
+                  ->references(['user_id', 'event_id'])->on('event_register')
+                  ->onDelete('cascade')
+                  ->onUpdate('cascade');
         });
     }
 

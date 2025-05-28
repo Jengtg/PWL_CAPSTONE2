@@ -1,3 +1,4 @@
+{{-- resources/views/layouts/navbar.blade.php --}}
 <nav
   class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
   id="layout-navbar">
@@ -23,21 +24,22 @@
       <li class="nav-item navbar-dropdown dropdown-user dropdown">
         <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
           <div class="avatar avatar-online">
-            <img src="{{ auth()->user()->avatar_url ?? asset('assets/img/avatars/1.png') }}" alt class="w-px-40 h-auto rounded-circle" />
+            {{-- Ganti dengan logika avatar pengguna jika ada, atau path default yang benar --}}
+            <img src="{{ auth()->user()->avatar_url ?? asset('assets/img/avatars/1.png') }}" alt="User Avatar" class="w-px-40 h-auto rounded-circle" />
           </div>
         </a>
         <ul class="dropdown-menu dropdown-menu-end">
           <li>
-            <a class="dropdown-item" href="{{ route('profile.edit') }}"> {{-- Sesuaikan dengan route profil Anda --}}
+            <a class="dropdown-item" href="{{ route('profile.edit') }}"> {{-- Pastikan route 'profile.edit' ada (Breeze menyediakan ini) --}}
               <div class="d-flex">
                 <div class="flex-shrink-0 me-3">
                   <div class="avatar avatar-online">
-                    <img src="{{ auth()->user()->avatar_url ?? asset('assets/img/avatars/1.png') }}" alt class="w-px-40 h-auto rounded-circle" />
+                    <img src="{{ auth()->user()->avatar_url ?? asset('assets/img/avatars/1.png') }}" alt="User Avatar" class="w-px-40 h-auto rounded-circle" />
                   </div>
                 </div>
                 <div class="flex-grow-1">
                   <span class="fw-semibold d-block">{{ auth()->user()->name }}</span>
-                  <small class="text-muted">{{ auth()->user()->role ?? 'Member' }}</small>
+                  <small class="text-muted">{{ ucfirst(auth()->user()->role ?? 'Member') }}</small> {{-- Menampilkan role dengan huruf kapital awal --}}
                 </div>
               </div>
             </a>
@@ -48,24 +50,25 @@
           <li>
             <a class="dropdown-item" href="{{ route('profile.edit') }}">
               <i class="bx bx-user me-2"></i>
-              <span class="align-middle">My Profile</span>
+              <span class="align-middle">Profil Saya</span>
             </a>
           </li>
           <li>
-            <a class="dropdown-item" href="#"> {{-- Sesuaikan route jika ada halaman settings --}}
+            <a class="dropdown-item" href="#"> {{-- Ganti href dengan route settings jika ada --}}
               <i class="bx bx-cog me-2"></i>
-              <span class="align-middle">Settings</span>
+              <span class="align-middle">Pengaturan</span>
             </a>
           </li>
-          <li>
-            <a class="dropdown-item" href="#"> {{-- Sesuaikan route jika ada halaman billing --}}
+          {{-- Contoh item billing, sesuaikan jika perlu --}}
+          {{-- <li>
+            <a class="dropdown-item" href="#">
               <span class="d-flex align-items-center align-middle">
                 <i class="flex-shrink-0 bx bx-credit-card me-2"></i>
                 <span class="flex-grow-1 align-middle">Billing</span>
                 <span class="flex-shrink-0 badge badge-center rounded-pill bg-danger w-px-20 h-px-20">4</span>
               </span>
             </a>
-          </li>
+          </li> --}}
           <li>
             <div class="dropdown-divider"></div>
           </li>
@@ -82,16 +85,15 @@
         </ul>
       </li>
       @else
-      <li class="nav-item me-2"> {{-- `me-2` untuk memberi sedikit jarak antara tombol --}}
-        <a href="{{ route('login') }}" class="nav-link p-0"> {{-- `p-0` pada nav-link agar button pas --}}
+      <li class="nav-item me-2">
+        <a href="{{ route('login') }}" class="nav-link p-0">
           <button type="button" class="btn btn-primary">
             <span class="tf-icons bx bx-log-in"></span>&nbsp; Login
           </button>
         </a>
       </li>
       <li class="nav-item">
-        <a href="{{ route('register') }}" class="nav-link p-0"> {{-- `p-0` pada nav-link agar button pas --}}
-          {{-- Anda bisa menggunakan style button yang berbeda jika diinginkan, misal btn-success atau btn-secondary --}}
+        <a href="{{ route('register') }}" class="nav-link p-0">
           <button type="button" class="btn btn-outline-primary">
             <span class="tf-icons bx bx-user-plus"></span>&nbsp; Register
           </button>
