@@ -10,16 +10,18 @@ class Event extends Model
     use HasFactory;
 
     protected $table = 'events';
-    // primaryKey is 'id' by default
-    // incrementing is true by default for integer primary keys
-    // keyType is 'int' by default
 
     protected $fillable = [
         'title',
         'description',
-        'start_date',
-        'end_date',
+        'start_date', // Jika kolom database Anda bernama start_date dan bertipe DATETIME
+        'end_date',   // Jika kolom database Anda bernama end_date dan bertipe DATETIME
         'event_category_id',
+        'lokasi',
+        'narasumber',
+        'poster_kegiatan',
+        'biaya_registrasi',
+        'jumlah_maksimal_peserta',
     ];
 
     /**
@@ -28,8 +30,9 @@ class Event extends Model
      * @var array
      */
     protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
+        'start_date' => 'datetime', // Mengasumsikan Anda menyimpan tanggal dan waktu
+        'end_date' => 'datetime',   // Mengasumsikan Anda menyimpan tanggal dan waktu
+        'biaya_registrasi' => 'decimal:2', // Contoh jika ingin biaya sebagai desimal
     ];
 
     /**
@@ -37,7 +40,7 @@ class Event extends Model
      */
     public function eventCategory()
     {
-        return $this->belongsTo(EventCategory::class, 'event_category_id', 'id');
+        return $this->belongsTo(EventCategory::class, 'event_category_id'); // 'id' sebagai foreign key kedua adalah default, bisa dihilangkan
     }
 
     /**
@@ -45,13 +48,13 @@ class Event extends Model
      */
     public function eventRegistrations()
     {
-        return $this->hasMany(EventRegister::class, 'event_id', 'id');
+        return $this->hasMany(EventRegister::class, 'event_id'); // 'id' sebagai local key kedua adalah default, bisa dihilangkan
     }
 
     // Optional: Relationship to users through registrations
     // public function registeredUsers()
     // {
     //     return $this->belongsToMany(User::class, 'event_register', 'event_id', 'user_id')
-    //                 ->withTimestamps(); // if you want to access created_at/updated_at on the pivot
+    //                  ->withTimestamps(); 
     // }
 }

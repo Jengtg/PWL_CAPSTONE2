@@ -25,7 +25,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign(['event_register_user_id', 'event_register_event_id'], 'files_event_register_fk')
-                  ->references(['user_id', 'event_id'])->on('event_register')
+                  ->references(['user_id', 'event_id'])->on('event_registers')
                   ->onDelete('set null')
                   ->onUpdate('cascade');
         });
