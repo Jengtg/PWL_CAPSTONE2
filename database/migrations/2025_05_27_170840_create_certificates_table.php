@@ -9,22 +9,28 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+     public function up(): void
     {
         Schema::create('certificates', function (Blueprint $table) {
-            $table->unsignedInteger('id');
-            $table->primary('id');
-            // If you want this to be auto-incrementing, use:
-            // $table->increments('id');
-
-            $table->unsignedInteger('event_register_user_id');
-            $table->unsignedInteger('event_register_event_id');
+            $table->id();
+        
+        
+            $table->unsignedBigInteger('event_register_user_id');
+            $table->unsignedBigInteger('event_register_event_id');
+        
+        
+            $table->string('file_path');
+            
             $table->timestamps();
-
-            $table->foreign(['event_register_user_id', 'event_register_event_id'], 'certificates_event_register_fk')
-                  ->references(['user_id', 'event_id'])->on('event_register')
-                  ->onDelete('cascade')
-                  ->onUpdate('cascade');
+        
+        
+            $table->foreign(
+                ['event_register_user_id', 'event_register_event_id'], 
+                'certificates_event_register_fk'
+            )
+            ->references(['user_id', 'event_id'])->on('event_register')
+            ->onDelete('cascade')
+            ->onUpdate('cascade');
         });
     }
 

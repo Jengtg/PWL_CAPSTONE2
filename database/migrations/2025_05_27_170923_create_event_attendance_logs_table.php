@@ -12,21 +12,25 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('event_attendance_logs', function (Blueprint $table) {
-            $table->unsignedInteger('id');
-            $table->primary('id');
-            // If you want this to be auto-incrementing, use:
-            // $table->increments('id');
-
-            $table->unsignedInteger('event_register_user_id');
-            $table->unsignedInteger('event_register_event_id');
+            // 1. Menggunakan $table->id() untuk primary key auto-increment standar
+            $table->id();
+        
+            // 2. Menyesuaikan tipe data foreign key menjadi unsignedBigInteger
+            $table->unsignedBigInteger('event_register_user_id');
+            $table->unsignedBigInteger('event_register_event_id');
+        
             $table->timestamp('scan_time')->useCurrent()->useCurrentOnUpdate();
             $table->string('qr_code');
             $table->timestamps();
-
-            $table->foreign(['event_register_user_id', 'event_register_event_id'], 'event_attendance_logs_event_register_fk')
-                  ->references(['user_id', 'event_id'])->on('event_register')
-                  ->onDelete('cascade')
-                  ->onUpdate('cascade');
+        
+            // Nama constraint kustom Anda sudah benar
+            $table->foreign(
+                ['event_register_user_id', 'event_register_event_id'],
+                'event_attendance_logs_event_register_fk'
+            )
+            ->references(['user_id', 'event_id'])->on('event_register')
+            ->onDelete('cascade')
+            ->onUpdate('cascade');
         });
     }
 

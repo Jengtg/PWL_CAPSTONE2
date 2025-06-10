@@ -19,27 +19,25 @@
 
     <ul class="menu-inner py-1">
 
-        {{-- MENU UNTUK SEMUA PENGGUNA YANG LOGIN --}}
-        @auth
-            <li class="menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <a href="{{ route('dashboard') }}" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-home-circle"></i>
-                    <div data-i18n="Dashboard">Dashboard</div>
-                </a>
-            </li>
-        @endauth
-
-        {{-- MENU UNTUK GUEST (JIKA SIDEBAR TAMPIL UNTUK GUEST, UMUMNYA TIDAK) --}}
-        {{-- ATAU MENU PUBLIK JIKA SIDEBAR INI JUGA DIPAKAI DI HALAMAN PUBLIK --}}
-        <li class="menu-header small text-uppercase">
-            <span class="menu-header-text">Public</span>
-        </li>
-        <li class="menu-item {{ request()->routeIs('events.guest.index') ? 'active' : '' }}">
-            <a href="{{ route('events.guest.index') }}" class="menu-link">
+        {{-- MENU UTAMA UNTUK SEMUA PENGGUNA & GUEST --}}
+        <li class="menu-item {{ request()->routeIs('home') || request()->routeIs('events.guest.index') ? 'active' : '' }}">
+            <a href="{{ route('home') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-calendar-event"></i>
                 <div data-i18n="Daftar Event">Daftar Event</div>
             </a>
         </li>
+        
+        {{-- MENU DASHBOARD (HANYA JIKA LOGIN DAN BUKAN MEMBER BIASA) --}}
+        {{-- @auth
+            @if(auth()->user()->role != 'member')
+                <li class="menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <a href="{{ route('dashboard') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                        <div data-i18n="Dashboard">Dashboard</div>
+                    </a>
+                </li>
+            @endif
+        @endauth --}}
 
         @auth
             {{-- MENU KHUSUS UNTUK ROLE 'member' --}}
@@ -123,20 +121,15 @@
                     <span class="menu-header-text">Administrasi</span>
                 </li>
                 <li class="menu-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                    {{-- Ganti dengan route yang benar --}}
-                    <a href="#" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-group"></i>
-                        <div data-i18n="Kelola Pengguna">Kelola Pengguna</div>
-                    </a>
+                    {{-- ... menu kelola pengguna ... --}}
                 </li>
                 <li class="menu-item {{ request()->routeIs('admin.event-categories.*') ? 'active' : '' }}">
-                    {{-- Ganti dengan route yang benar --}}
-                    <a href="#" class="menu-link">
+                    {{-- PASTIKAN LINK INI BENAR --}}
+                    <a href="{{ route('admin.event-categories.index') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-category"></i>
                         <div data-i18n="Kelola Kategori Event">Kategori Event</div>
                     </a>
                 </li>
-                {{-- Tambahkan menu administrasi lainnya jika perlu --}}
             @endif
 
             {{-- Pengaturan Akun Umum untuk semua yang login --}}

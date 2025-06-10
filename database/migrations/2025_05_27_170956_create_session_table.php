@@ -13,21 +13,23 @@ return new class extends Migration
     {
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
-            $table->unsignedInteger('user_id')->nullable(); // Matches users.id type
+        
+            // Menggunakan foreignId() untuk tipe data yang benar secara otomatis
+            $table->foreignId('user_id')->nullable()->index();
+        
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
             $table->longText('payload');
             $table->integer('last_activity')->index();
-
-            // Foreign key if users.id is unsignedInteger('id') and primary()
-            // If users.id is increments('id'), it's also unsigned integer.
+        
+            // Definisi foreign key untuk user_id
             $table->foreign('user_id')
                   ->references('id')->on('users')
-                  ->onDelete('set null') // Or 'cascade'
+                  ->onDelete('set null')
                   ->onUpdate('cascade');
         });
     }
-
+    
     /**
      * Reverse the migrations.
      */
