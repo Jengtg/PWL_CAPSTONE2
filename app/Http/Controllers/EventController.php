@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use App\Models\EventCategory;
-use App\Models\EventRegister;
+// Hapus 'use App\Models\EventRegister;' jika tidak digunakan di tempat lain
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -15,17 +15,12 @@ class EventController extends Controller
      */
     public function guestIndex(Request $request)
     {
-    // Query baru yang lebih baik (berdasarkan tanggal selesai)
-    $query = Event::with('eventCategory')
-                  ->where('end_date', '>=', now()->toDateString()) 
-                  ->orderBy('start_date', 'asc');
+        $query = Event::with('eventCategory')
+                      ->where('end_date', '>=', now()->toDateString()) 
+                      ->orderBy('start_date', 'asc');
         
-        // Mengambil semua kategori untuk dropdown filter
         $categories = EventCategory::orderBy('name')->get();
-
         $events = $query->paginate(9);
-
-        // Mengembalikan view untuk halaman guest
         return view('events.guest-index', compact('events', 'categories'));
     }
 
@@ -34,21 +29,24 @@ class EventController extends Controller
      */
     public function showPublic(Event $event)
     {
+        // Eager load sessions untuk ditampilkan di halaman detail
+        $event->load('sessions.eventRegistrations');
         return view('events.show-public', compact('event'));
     }
 
     /**
-     * Menampilkan daftar event untuk panel panitia/admin.
+     * Menampilkan daftar event untuk panel panitia.
      */
     public function index(Request $request)
     {
-        $query = Event::with('eventCategory')->latest('start_date');
+        // Eager load jumlah sesi untuk ditampilkan di tabel
+        $query = Event::with('eventCategory')->withCount('sessions')->latest('start_date');
         $events = $query->paginate(15);
         return view('committee.events.index', compact('events'));
     }
 
     /**
-     * Menampilkan form untuk membuat event baru.
+     * Menampilkan form untuk membuat event induk baru.
      */
     public function create()
     {
@@ -57,11 +55,10 @@ class EventController extends Controller
     }
 
     /**
-     * Menyimpan event baru ke database.
+     * Menyimpan event induk baru ke database.
      */
     public function store(Request $request)
     {
-        // Validasi SEKARANG hanya untuk field Event Induk
         $validatedData = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -69,7 +66,6 @@ class EventController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
             'event_category_id' => 'required|integer|exists:event_categories,id',
             'poster_kegiatan' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-            // HAPUS validasi untuk: lokasi, narasumber, biaya_registrasi, jumlah_maksimal_peserta
         ]);
 
         if ($request->hasFile('poster_kegiatan')) {
@@ -79,24 +75,27 @@ class EventController extends Controller
 
         $event = Event::create($validatedData);
 
-        // Alihkan ke halaman detail event agar bisa langsung tambah sesi
         return redirect()->route('committee.events.show', $event->id)
-                         ->with('success', 'Event induk berhasil dibuat. Sekarang, silakan tambahkan sesi untuk event ini.');
+                         ->with('success', 'Event induk berhasil dibuat. Sekarang, silakan tambahkan sesi.');
     }
 
-
     /**
-     * Menampilkan detail event di panel panitia/admin.
+     * Menampilkan detail event dan daftar sesinya di panel panitia.
      */
     public function show(Event $event)
     {
-        // Eager load sesi-sesi yang dimiliki event ini
-        $event->load('sessions'); 
+        // Eager load sesi beserta jumlah pendaftarnya.
+        // Pengurutan sudah diatur di dalam relasi sessions() pada Model Event,
+        // jadi kita tidak perlu menambahkan orderBy() lagi di sini.
+        $event->load(['sessions' => function ($query) {
+            $query->withCount('eventRegistrations');
+        }]);
+        
         return view('committee.events.show', compact('event'));
     }
 
     /**
-     * Menampilkan form untuk mengedit event.
+     * Menampilkan form untuk mengedit event induk.
      */
     public function edit(Event $event)
     {
@@ -105,11 +104,10 @@ class EventController extends Controller
     }
 
     /**
-     * Memperbarui event di database.
+     * Memperbarui event induk di database.
      */
     public function update(Request $request, Event $event)
     {
-        // Validasi SEKARANG hanya untuk field Event Induk
         $validatedData = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -117,7 +115,6 @@ class EventController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
             'event_category_id' => 'required|integer|exists:event_categories,id',
             'poster_kegiatan' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-            // HAPUS validasi untuk: lokasi, narasumber, biaya_registrasi, jumlah_maksimal_peserta
         ]);
 
         if ($request->hasFile('poster_kegiatan')) {
@@ -133,8 +130,9 @@ class EventController extends Controller
         return redirect()->route('committee.events.show', $event->id)
                          ->with('success', 'Event induk berhasil diperbarui.');
     }
+
     /**
-     * Menghapus event dari database.
+     * Menghapus event induk dari database.
      */
     public function destroy(Event $event)
     {
@@ -146,46 +144,5 @@ class EventController extends Controller
         return redirect()->route('committee.events.index')->with('success', 'Event berhasil dihapus.');
     }
 
-    
-    /**
-     * Mendaftarkan pengguna yang login ke sebuah event.
-     */
-    public function register(Request $request, Event $event)
-    {
-        $user = $request->user();
-
-        // 1. Cek apakah kuota masih tersedia
-        $kuotaTerisi = $event->eventRegistrations()->count();
-        if ($kuotaTerisi >= $event->jumlah_maksimal_peserta) {
-            return back()->with('error', 'Maaf, kuota untuk event ini sudah penuh.');
-        }
-
-        // 2. Cek apakah pengguna sudah terdaftar sebelumnya
-        $isAlreadyRegistered = EventRegister::where('user_id', $user->id)
-                                            ->where('event_id', $event->id)
-                                            ->exists();
-        
-        if ($isAlreadyRegistered) {
-            return back()->with('error', 'Anda sudah terdaftar di event ini.');
-        }
-
-        // 3. Buat entri registrasi baru
-        EventRegister::create([
-            'user_id' => $user->id,
-            'event_id' => $event->id,
-            'status_id' => 1, // Asumsi status_id 1 = "Menunggu Pembayaran"
-            // 'payment_file' akan diisi nanti
-        ]);
-
-        // 4. Redirect dengan pesan sukses
-        // Jika event berbayar, arahkan ke halaman pembayaran. Jika gratis, langsung konfirmasi.
-        if ($event->biaya_registrasi > 0) {
-            // Ganti '#' dengan route halaman pembayaran Anda nantinya
-            return redirect()->route('home')->with('success', 'Anda berhasil mendaftar! Silakan lanjutkan ke proses pembayaran.');
-        } else {
-            // Untuk event gratis, Anda bisa langsung update status menjadi lunas
-            // atau arahkan ke halaman "Event Saya"
-            return redirect()->route('home')->with('success', 'Anda berhasil terdaftar di event gratis ini!');
-        }
-    }
+    // METHOD REGISTER YANG USANG TELAH DIHAPUS DARI SINI
 }

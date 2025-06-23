@@ -41,19 +41,20 @@
 
         @auth
             {{-- MENU KHUSUS UNTUK ROLE 'member' --}}
+
             @if(auth()->user()->role == 'member')
                 <li class="menu-header small text-uppercase">
                     <span class="menu-header-text">Area Member</span>
                 </li>
                 <li class="menu-item {{ request()->routeIs('member.registrations.index') ? 'active' : '' }}">
-                    {{-- Ganti dengan route yang benar --}}
-                    <a href="#" class="menu-link"> 
+                    {{-- PERUBAHAN DI SINI: Mengarahkan ke rute yang benar --}}
+                    <a href="{{ route('member.registrations.index') }}" class="menu-link"> 
                         <i class="menu-icon tf-icons bx bx-list-check"></i>
                         <div data-i18n="Event Saya">Event Saya</div>
                     </a>
                 </li>
                 <li class="menu-item {{ request()->routeIs('member.certificates.index') ? 'active' : '' }}">
-                    {{-- Ganti dengan route yang benar --}}
+                    {{-- Ganti dengan route yang benar nanti --}}
                     <a href="#" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-file-blank"></i>
                         <div data-i18n="Sertifikat Saya">Sertifikat Saya</div>
@@ -100,19 +101,15 @@
                 </li>
             @endif
 
-            {{-- MENU KHUSUS UNTUK ROLE 'tim_keuangan' --}}
-            @if(auth()->user()->role == 'tim_keuangan')
-                <li class="menu-header small text-uppercase">
-                    <span class="menu-header-text">Tim Keuangan</span>
-                </li>
-                <li class="menu-item {{ request()->routeIs('finance.payments.*') ? 'active' : '' }}">
-                    {{-- Ganti dengan route yang benar --}}
-                    <a href="#" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-money-withdraw"></i>
-                        <div data-i18n="Verifikasi Pembayaran">Verifikasi Pembayaran</div>
+            {{-- MENU KHUSUS ROLE TIM KEUANGAN --}}
+            @if(auth()->check() && auth()->user()->role == 'tim_keuangan')
+                <li class="menu-header small text-uppercase"><span class="menu-header-text">Tim Keuangan</span></li>
+                <li class="menu-item {{ request()->routeIs('finance.verifications.*') ? 'active' : '' }}">
+                    <a href="{{ route('finance.verifications.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-wallet-alt"></i>
+                        <div>Verifikasi Pembayaran</div>
                     </a>
                 </li>
-                {{-- Tambahkan menu laporan jika perlu --}}
             @endif
 
             {{-- MENU KHUSUS UNTUK ROLE 'administrator' --}}

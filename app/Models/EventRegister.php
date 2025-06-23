@@ -4,30 +4,24 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
 
 class EventRegister extends Model
 {
     use HasFactory;
 
     protected $table = 'event_register';
-    
-    /**
-     * Kunci utama untuk model ini adalah komposit.
-     */
-    protected $primaryKey = ['user_id', 'event_session_id'];
-    
-    /**
-     * Kunci utama tidak auto-increment.
-     */
-    public $incrementing = false;
+
+    // Karena kita sekarang menggunakan primary key 'id' standar, kita tidak perlu lagi
+    // kode-kode rumit untuk menangani composite key.
+    // Properti seperti $primaryKey, $incrementing, dan method setKeysForSaveQuery()
+    // bisa dihapus.
 
     /**
      * Kolom yang diizinkan untuk diisi secara massal.
      */
     protected $fillable = [
         'user_id',
-        'event_session_id', // Diperbarui dari 'event_id'
+        'event_session_id',
         'status_id',
         'payment_file',
     ];
@@ -54,24 +48,5 @@ class EventRegister extends Model
     public function status()
     {
         return $this->belongsTo(Status::class);
-    }
-
-    /**
-     * Menangani composite primary key saat melakukan update.
-     * * @param \Illuminate\Database\Eloquent\Builder $query
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    protected function setKeysForSaveQuery($query)
-    {
-        $keys = $this->getKeyName();
-        if (!is_array($keys)) {
-            return parent::setKeysForSaveQuery($query);
-        }
-
-        foreach ($keys as $key) {
-            $query->where($key, '=', $this->getAttribute($key));
-        }
-
-        return $query;
     }
 }
