@@ -12,27 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('events', function (Blueprint $table) {
-            $table->id(); // Membuat ID BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY
-        
-            $table->string('title');
-            $table->text('description');
-        
-            // Menggunakan dateTime untuk menyimpan tanggal dan waktu
-            $table->dateTime('start_date');
-            $table->dateTime('end_date');
-        
-            // Foreign key ke tabel kategori
-            $table->foreignId('event_category_id')
-                  ->constrained('event_categories')
-                  ->onDelete('cascade');
-        
-            // ===== KOLOM-KOLOM BARU YANG HILANG DITAMBAHKAN DI SINI =====
-            $table->string('lokasi');
-            $table->string('narasumber');
-            $table->string('poster_kegiatan')->nullable(); // Boleh kosong
-            $table->decimal('biaya_registrasi', 10, 2)->default(0); // Untuk uang, default 0
-            $table->unsignedInteger('jumlah_maksimal_peserta');
-            // ==========================================================
+            $table->id();
+            $table->foreignId('event_category_id')->constrained('event_categories')->onDelete('cascade');
+            $table->string('title'); // Judul Event Induk
+            $table->text('description'); // Deskripsi Umum
+            $table->string('poster_kegiatan')->nullable(); // Poster Utama
+            
+            // PERUBAHAN: Menambahkan rentang tanggal untuk Event Induk
+            $table->date('start_date'); // Tanggal mulai keseluruhan event
+            $table->date('end_date');   // Tanggal berakhir keseluruhan event
         
             $table->timestamps();
         });

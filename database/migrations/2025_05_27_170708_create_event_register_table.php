@@ -9,35 +9,19 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-public function up(): void
-{
-    Schema::create('event_register', function (Blueprint $table) {
-        $table->unsignedBigInteger('user_id');
-        $table->unsignedBigInteger('event_id');
-
-        $table->unsignedTinyInteger('status_id');
-        $table->string('payment_file')->nullable();
-        $table->timestamps();
-
-        $table->primary(['user_id', 'event_id']); 
-
-        $table->foreign('user_id')
-              ->references('id')->on('users')
-              ->onDelete('cascade')
-              ->onUpdate('cascade');
-
-        $table->foreign('event_id')
-              ->references('id')->on('events')
-              ->onDelete('cascade')
-              ->onUpdate('cascade');
-
-        $table->foreign('status_id')
-              ->references('id')->on('status')
-              ->onDelete('cascade')
-              ->onUpdate('cascade');
-    });
-}
-
+// database/migrations/xxxx_xx_xx_xxxxxx_create_event_register_table.php
+    public function up(): void
+    {
+        Schema::create('event_register', function (Blueprint $table) {
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('event_session_id')->constrained('event_sessions')->onDelete('cascade');
+            $table->unsignedTinyInteger('status_id');
+            $table->foreign('status_id')->references('id')->on('status')->onDelete('cascade');
+            $table->string('payment_file')->nullable();
+            $table->timestamps();
+            $table->primary(['user_id', 'event_session_id']);
+        });
+    }
     /**
      * Reverse the migrations.
      */

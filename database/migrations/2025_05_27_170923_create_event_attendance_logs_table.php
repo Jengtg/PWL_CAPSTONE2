@@ -12,28 +12,26 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('event_attendance_logs', function (Blueprint $table) {
-            // 1. Menggunakan $table->id() untuk primary key auto-increment standar
             $table->id();
         
-            // 2. Menyesuaikan tipe data foreign key menjadi unsignedBigInteger
+            // Menggunakan nama dan tipe data yang benar
             $table->unsignedBigInteger('event_register_user_id');
-            $table->unsignedBigInteger('event_register_event_id');
+            $table->unsignedBigInteger('event_register_event_session_id');
         
             $table->timestamp('scan_time')->useCurrent()->useCurrentOnUpdate();
             $table->string('qr_code');
             $table->timestamps();
         
-            // Nama constraint kustom Anda sudah benar
+            // Mereferensikan ke kolom yang benar di tabel 'event_register'
             $table->foreign(
-                ['event_register_user_id', 'event_register_event_id'],
+                ['event_register_user_id', 'event_register_event_session_id'],
                 'event_attendance_logs_event_register_fk'
             )
-            ->references(['user_id', 'event_id'])->on('event_register')
+            ->references(['user_id', 'event_session_id'])->on('event_register')
             ->onDelete('cascade')
             ->onUpdate('cascade');
         });
     }
-
     /**
      * Reverse the migrations.
      */

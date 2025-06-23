@@ -15,11 +15,11 @@ class EventController extends Controller
      */
     public function guestIndex(Request $request)
     {
-        // Query untuk mengambil event yang akan datang atau sedang berlangsung
-        $query = Event::with('eventCategory')
-                      ->where('start_date', '>=', now())
-                      ->orderBy('start_date', 'asc');
-
+    // Query baru yang lebih baik (berdasarkan tanggal selesai)
+    $query = Event::with('eventCategory')
+                  ->where('end_date', '>=', now()->toDateString()) 
+                  ->orderBy('start_date', 'asc');
+        
         // Mengambil semua kategori untuk dropdown filter
         $categories = EventCategory::orderBy('name')->get();
 
@@ -61,17 +61,15 @@ class EventController extends Controller
      */
     public function store(Request $request)
     {
+        // Validasi SEKARANG hanya untuk field Event Induk
         $validatedData = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'event_category_id' => 'required|integer|exists:event_categories,id',
-            'lokasi' => 'required|string|max:255',
-            'narasumber' => 'required|string|max:255',
             'poster_kegiatan' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-            'biaya_registrasi' => 'required|numeric|min:0',
-            'jumlah_maksimal_peserta' => 'required|integer|min:1',
+            // HAPUS validasi untuk: lokasi, narasumber, biaya_registrasi, jumlah_maksimal_peserta
         ]);
 
         if ($request->hasFile('poster_kegiatan')) {
@@ -79,17 +77,21 @@ class EventController extends Controller
             $validatedData['poster_kegiatan'] = $path;
         }
 
-        Event::create($validatedData);
+        $event = Event::create($validatedData);
 
-        return redirect()->route('committee.events.index')->with('success', 'Event berhasil dibuat.');
+        // Alihkan ke halaman detail event agar bisa langsung tambah sesi
+        return redirect()->route('committee.events.show', $event->id)
+                         ->with('success', 'Event induk berhasil dibuat. Sekarang, silakan tambahkan sesi untuk event ini.');
     }
+
 
     /**
      * Menampilkan detail event di panel panitia/admin.
      */
     public function show(Event $event)
     {
-        $event->load('eventCategory', 'eventRegistrations.user', 'eventRegistrations.status');
+        // Eager load sesi-sesi yang dimiliki event ini
+        $event->load('sessions'); 
         return view('committee.events.show', compact('event'));
     }
 
@@ -107,17 +109,15 @@ class EventController extends Controller
      */
     public function update(Request $request, Event $event)
     {
+        // Validasi SEKARANG hanya untuk field Event Induk
         $validatedData = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'event_category_id' => 'required|integer|exists:event_categories,id',
-            'lokasi' => 'required|string|max:255',
-            'narasumber' => 'required|string|max:255',
             'poster_kegiatan' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-            'biaya_registrasi' => 'required|numeric|min:0',
-            'jumlah_maksimal_peserta' => 'required|integer|min:1',
+            // HAPUS validasi untuk: lokasi, narasumber, biaya_registrasi, jumlah_maksimal_peserta
         ]);
 
         if ($request->hasFile('poster_kegiatan')) {
@@ -130,9 +130,9 @@ class EventController extends Controller
 
         $event->update($validatedData);
 
-        return redirect()->route('committee.events.index')->with('success', 'Event berhasil diperbarui.');
+        return redirect()->route('committee.events.show', $event->id)
+                         ->with('success', 'Event induk berhasil diperbarui.');
     }
-
     /**
      * Menghapus event dari database.
      */
@@ -146,6 +146,7 @@ class EventController extends Controller
         return redirect()->route('committee.events.index')->with('success', 'Event berhasil dihapus.');
     }
 
+    
     /**
      * Mendaftarkan pengguna yang login ke sebuah event.
      */

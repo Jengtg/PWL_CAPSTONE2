@@ -12,27 +12,23 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('files', function (Blueprint $table) {
-            // 1. Menggunakan $table->id() untuk primary key auto-increment standar.
             $table->id();
-        
             $table->string('file_name');
             $table->string('file_path');
-        
-            // 2. Mengubah tipe data 'file_type' menjadi string untuk MIME type.
             $table->string('file_type')->nullable();
         
-            // 3. Menyesuaikan tipe data foreign key menjadi unsignedBigInteger.
+            // 1. Menggunakan nama kolom yang benar
             $table->unsignedBigInteger('event_register_user_id')->nullable();
-            $table->unsignedBigInteger('event_register_event_id')->nullable();
+            $table->unsignedBigInteger('event_register_event_session_id')->nullable();
             
             $table->timestamps();
         
-            // 4. Mendefinisikan foreign key dengan nama kustom yang sudah Anda buat.
+            // 2. Mereferensikan ke kolom yang benar di tabel 'event_register'
             $table->foreign(
-                ['event_register_user_id', 'event_register_event_id'], 
+                ['event_register_user_id', 'event_register_event_session_id'], 
                 'files_event_register_fk'
             )
-            ->references(['user_id', 'event_id'])->on('event_register')
+            ->references(['user_id', 'event_session_id'])->on('event_register')
             ->onDelete('set null')
             ->onUpdate('cascade');
         });
