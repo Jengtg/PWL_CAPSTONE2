@@ -16,7 +16,7 @@
 
     @if(!isset($events) || $events->isEmpty())
         <div class="alert alert-warning text-center" role="alert">
-            {{-- ... pesan event tidak ada ... --}}
+          Tidak ada Event yang sedang berlangsung!
         </div>
     @else
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
