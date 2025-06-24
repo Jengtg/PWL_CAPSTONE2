@@ -2,8 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,11 +11,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Panggil StatusSeeder di sini
+        // Panggil seeder dalam urutan yang logis
         $this->call([
-            StatusSeeder::class,
-            // Anda bisa menambahkan seeder lain di sini nanti, contoh:
-            // EventCategorySeeder::class,
+            StatusSeeder::class,        // Wajib ada sebelum yang lain
+            UserSeeder::class,          // Buat pengguna dengan peran
+            EventCategorySeeder::class, // Buat kategori
+            // EventSeeder::class,      // Jika Anda membuat seeder untuk event
+            // EventSessionSeeder::class, // Jika Anda membuat seeder untuk sesi
         ]);
     }
 }
