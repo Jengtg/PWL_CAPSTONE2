@@ -7,7 +7,7 @@ use App\Http\Controllers\EventCategoryController;
 use App\Http\Controllers\EventSessionController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\VerificationController;
-use App\Http\Controllers\AttendanceController; // <-- Tambahkan ini
+use App\Http\Controllers\AttendanceController; 
 
 // --- RUTE PUBLIK ---
 Route::get('/', [EventController::class, 'guestIndex'])->name('home');
@@ -23,9 +23,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::post('/sessions/{session}/register', [EventSessionController::class, 'register'])
+        ->middleware('role:member') // Tetap dilindungi untuk member
+        ->name('sessions.register');
+
     // --- Grup Rute Khusus Member ---
     Route::middleware('role:member')->prefix('member')->name('member.')->group(function () {
-        Route::post('/sessions/{session}/register', [EventSessionController::class, 'register'])->name('sessions.register');
         Route::get('/my-registrations', [RegistrationController::class, 'index'])->name('registrations.index');
         Route::get('/registrations/{registration}/payment', [RegistrationController::class, 'payment'])->name('registrations.payment');
         Route::post('/registrations/{registration}/payment', [RegistrationController::class, 'processPayment'])->name('registrations.processPayment');
@@ -36,7 +39,6 @@ Route::middleware('auth')->group(function () {
         Route::resource('events', EventController::class); 
         Route::resource('events.sessions', EventSessionController::class)->except(['index', 'show'])->shallow();
 
-        // TAMBAHKAN RUTE UNTUK KEHADIRAN DI SINI
         Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
         Route::get('/attendance/{session}/scan', [AttendanceController::class, 'scan'])->name('attendance.scan');
         Route::post('/attendance/process', [AttendanceController::class, 'processScan'])->name('attendance.process');

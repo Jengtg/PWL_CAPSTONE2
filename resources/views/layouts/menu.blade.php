@@ -85,13 +85,6 @@
                         </li>
                     </ul>
                 </li>
-                 <li class="menu-item {{ request()->routeIs('committee.attendance.*') ? 'active' : '' }}">
-                    {{-- Ganti dengan route yang benar --}}
-                    <a href="#" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-qr-scan"></i>
-                        <div data-i18n="Kelola Kehadiran">Kelola Kehadiran</div>
-                    </a>
-                </li>
                 <li class="menu-item {{ request()->routeIs('committee.certificates.*') ? 'active' : '' }}">
                      {{-- Ganti dengan route yang benar --}}
                     <a href="#" class="menu-link">
@@ -99,6 +92,15 @@
                         <div data-i18n="Kelola Sertifikat">Kelola Sertifikat</div>
                     </a>
                 </li>
+                @if(auth()->check() && auth()->user()->role == 'panitia_kegiatan')
+                {{-- ... menu kelola event ... --}}
+                <li class="menu-item {{ request()->routeIs('committee.attendance.*') ? 'active' : '' }}">
+                    <a href="{{ route('committee.attendance.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-qr-scan"></i>
+                        <div>Kelola Kehadiran</div>
+                    </a>
+                </li>
+@endif
             @endif
 
             {{-- MENU KHUSUS ROLE TIM KEUANGAN --}}

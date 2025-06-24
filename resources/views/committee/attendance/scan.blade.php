@@ -11,19 +11,19 @@
     </h4>
 
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-7">
             <div class="card">
                 <div class="card-body text-center">
-                    <div id="qr-reader" style="width: 100%;"></div>
-                    <div id="qr-reader-results" class="mt-3"></div>
+                    <p class="text-muted">Arahkan kamera ke QR Code peserta.</p>
+                    <div id="qr-reader" style="width: 100%; max-width: 500px; margin: auto;"></div>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-5">
              <div class="card">
                 <div class="card-header"><h5 class="mb-0">Hasil Scan Terakhir</h5></div>
                 <div class="card-body" id="scan-result-info">
-                    <p class="text-muted">Arahkan kamera ke QR Code peserta untuk mencatat kehadiran.</p>
+                    <p class="text-muted text-center">Menunggu hasil scan...</p>
                 </div>
              </div>
         </div>
@@ -35,15 +35,20 @@
 {{-- Kita akan menggunakan library html5-qrcode --}}
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <script>
-    function onScanSuccess(decodedText, decodedResult) {
-        // Hentikan sejenak scanner agar tidak scan berulang kali
-        html5QrcodeScanner.pause();
+    // Variabel penanda untuk mencegah scan ganda
+    let isProcessing = false;
 
-        // Tampilkan hasil di console untuk debug
-        console.log(`Code matched = ${decodedText}`, decodedResult);
+    function onScanSuccess(decodedText, decodedResult) {
+        // Jika sedang memproses, abaikan scan baru
+        if (isProcessing) {
+            return;
+        }
+
+        // Set penanda menjadi true untuk memblokir scan berikutnya
+        isProcessing = true;
 
         let resultDiv = document.getElementById('scan-result-info');
-        resultDiv.innerHTML = `<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div><p>Memproses: ${decodedText}</p></div>`;
+        resultDiv.innerHTML = `<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div><p>Memproses...</p></div>`;
 
         // Kirim data ke backend menggunakan fetch API
         fetch("{{ route('committee.attendance.process') }}", {
@@ -60,14 +65,15 @@
         .then(response => response.json())
         .then(data => {
             let alertClass = data.success ? 'alert-success' : 'alert-danger';
-            resultDiv.innerHTML = `<div class="alert ${alertClass}">${data.message}</div>`;
-            // Lanjutkan scan setelah beberapa detik
-            setTimeout(() => { html5QrcodeScanner.resume(); }, 3000);
+            resultDiv.innerHTML = `<div class="alert ${alertClass} text-center"><strong>${data.message}</strong></div>`;
+            // Reset penanda dan lanjutkan scan setelah beberapa detik
+            setTimeout(() => { isProcessing = false; }, 2500);
         })
         .catch(error => {
             console.error('Error:', error);
-            resultDiv.innerHTML = `<div class="alert alert-danger">Terjadi kesalahan saat memproses.</div>`;
-            setTimeout(() => { html5QrcodeScanner.resume(); }, 3000);
+            resultDiv.innerHTML = `<div class="alert alert-danger text-center"><strong>Terjadi kesalahan.</strong></div>`;
+            // Reset penanda dan lanjutkan scan setelah beberapa detik
+            setTimeout(() => { isProcessing = false; }, 2500);
         });
     }
 

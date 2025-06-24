@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema; // <-- TAMBAHKAN INI
+use Illuminate\Support\Facades\Schema;
 
 class StatusSeeder extends Seeder
 {
@@ -23,13 +23,14 @@ class StatusSeeder extends Seeder
         // Aktifkan kembali pemeriksaan foreign key
         Schema::enableForeignKeyConstraints();
 
-        // Masukkan data status yang dibutuhkan
+        // Masukkan data status yang dibutuhkan dengan alur yang benar
         DB::table('status')->insert([
             ['id' => 1, 'name' => 'Menunggu Pembayaran'],
-            ['id' => 2, 'name' => 'Pembayaran Diterima'],
-            ['id' => 3, 'name' => 'Hadir'],
-            ['id' => 4, 'name' => 'Tidak Hadir'],
-            ['id' => 5, 'name' => 'Dibatalkan'],
+            ['id' => 2, 'name' => 'Menunggu Konfirmasi'], // <-- STATUS BARU DITAMBAHKAN
+            ['id' => 3, 'name' => 'Pembayaran Diterima'], // ID diubah dari 2 menjadi 3
+            ['id' => 4, 'name' => 'Hadir'],                // ID diubah dari 3 menjadi 4
+            ['id' => 5, 'name' => 'Tidak Hadir'],           // ID diubah dari 4 menjadi 5
+            ['id' => 6, 'name' => 'Dibatalkan'],            // ID diubah dari 5 menjadi 6
         ]);
     }
 }
