@@ -2,99 +2,69 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth; 
 
 class UserController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Menampilkan daftar semua pengguna.
      */
     public function index()
     {
-        $users = User::paginate(15);
-        return view('admin.users.index', compact('users')); // Example view
+        // Ambil semua pengguna KECUALI admin yang sedang login untuk mencegah
+        // admin mengunci atau menghapus akunnya sendiri.
+        $users = User::where('id', '!=', Auth::id())->orderBy('name')->paginate(15);
+        return view('admin.users.index', compact('users'));
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('admin.users.create'); // Example view
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'id' => 'required|integer|unique:users,id', // If manually assigning ID
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['sometimes', 'string', 'in:admin,quest,editor'], // Adjust roles as needed
-        ]);
-
-        User::create([
-            'id' => $request->id, // If manually assigning ID
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role ?? 'quest',
-        ]);
-
-        return redirect()->route('users.index')->with('success', 'User created successfully.');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(User $user)
-    {
-        return view('admin.users.show', compact('user')); // Example view
-    }
-
-    /**
-     * Show the form for editing the specified resource.
+     * Menampilkan form untuk mengedit peran pengguna.
      */
     public function edit(User $user)
     {
-        return view('admin.users.edit', compact('user')); // Example view
+        // Mencegah admin mengedit akunnya sendiri melalui URL
+        if ($user->id === Auth::id()) {
+            abort(403, 'Anda tidak dapat mengedit akun Anda sendiri dari halaman ini.');
+        }
+        return view('admin.users.edit', compact('user'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * Memperbarui peran pengguna di database.
      */
     public function update(Request $request, User $user)
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
-            'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
-            'role' => ['sometimes', 'string', 'in:admin,quest,editor'], // Adjust roles
+        // Validasi bahwa peran yang dipilih adalah salah satu dari yang diizinkan
+        $validated = $request->validate([
+            'role' => ['required', Rule::in(['member', 'panitia_kegiatan', 'tim_keuangan', 'administrator'])],
         ]);
 
-        $userData = $request->only('name', 'email', 'role');
-        if ($request->filled('password')) {
-            $userData['password'] = Hash::make($request->password);
-        }
+        $user->update(['role' => $validated['role']]);
 
-        $user->update($userData);
-
-        return redirect()->route('users.index')->with('success', 'User updated successfully.');
+        return redirect()->route('admin.users.index')->with('success', 'Peran untuk pengguna ' . $user->name . ' berhasil diperbarui.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Menghapus (atau menonaktifkan) pengguna.
      */
     public function destroy(User $user)
     {
-        // Add authorization checks: e.g., cannot delete self or last admin
+        // Mencegah admin menghapus akunnya sendiri
+        if ($user->id === Auth::id()) {
+            return back()->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
+        }
+
+        // PENTING: Disarankan untuk tidak menghapus permanen data pengguna.
+        // Opsi yang lebih baik adalah menambahkan kolom 'is_active' (boolean)
+        // dan menonaktifkannya: $user->update(['is_active' => false]);
+        // Namun, untuk saat ini kita akan menghapusnya.
+        
         $user->delete();
-        return redirect()->route('users.index')->with('success', 'User deleted successfully.');
+
+        return redirect()->route('admin.users.index')->with('success', 'Pengguna berhasil dihapus.');
     }
 }

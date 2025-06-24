@@ -103,6 +103,12 @@
                         <div data-i18n="Kategori Event">Kategori Event</div>
                     </a>
                 </li>
+                <li class="menu-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.users.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-group"></i>
+                        <div>Kelola Pengguna</div>
+                    </a>
+                </li>
             @endif
 
             {{-- Pengaturan Akun Umum untuk semua yang login --}}

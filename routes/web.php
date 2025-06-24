@@ -9,7 +9,8 @@ use App\Http\Controllers\EventSessionController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\AttendanceController;
-use App\Http\Controllers\CertificateController; // <-- Tambahkan ini
+use App\Http\Controllers\CertificateController; 
+use App\Http\Controllers\UserController;
 
 // --- RUTE PUBLIK ---
 Route::get('/', [EventController::class, 'guestIndex'])->name('home');
@@ -60,6 +61,9 @@ Route::middleware('auth')->group(function () {
     // --- Grup Rute Khusus Administrator ---
     Route::middleware('role:administrator')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('event-categories', EventCategoryController::class);
+    
+            // TAMBAHKAN RUTE INI UNTUK KELOLA PENGGUNA
+        Route::resource('users', UserController::class)->only(['index', 'edit', 'update', 'destroy']);
     });
 
 });
