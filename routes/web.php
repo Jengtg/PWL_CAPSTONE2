@@ -1,5 +1,6 @@
 <?php
 
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\EventController;
@@ -7,7 +8,8 @@ use App\Http\Controllers\EventCategoryController;
 use App\Http\Controllers\EventSessionController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\VerificationController;
-use App\Http\Controllers\AttendanceController; 
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\CertificateController; // <-- Tambahkan ini
 
 // --- RUTE PUBLIK ---
 Route::get('/', [EventController::class, 'guestIndex'])->name('home');
@@ -16,16 +18,16 @@ Route::get('/events/{event}', [EventController::class, 'showPublic'])->name('eve
 
 // --- RUTE UNTUK PENGGUNA YANG SUDAH LOGIN ---
 Route::middleware('auth')->group(function () {
-
+    
     Route::get('/dashboard', fn() => redirect()->route('home'))->name('dashboard');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::post('/sessions/{session}/register', [EventSessionController::class, 'register'])
+        Route::post('/sessions/{session}/register', [EventSessionController::class, 'register'])
         ->middleware('role:member') // Tetap dilindungi untuk member
-        ->name('sessions.register');
+        ->name('sessions.register'); // Namanya sekarang benar
 
     // --- Grup Rute Khusus Member ---
     Route::middleware('role:member')->prefix('member')->name('member.')->group(function () {
@@ -38,10 +40,14 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:panitia_kegiatan')->prefix('committee')->name('committee.')->group(function () {
         Route::resource('events', EventController::class); 
         Route::resource('events.sessions', EventSessionController::class)->except(['index', 'show'])->shallow();
-
+        
         Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
         Route::get('/attendance/{session}/scan', [AttendanceController::class, 'scan'])->name('attendance.scan');
         Route::post('/attendance/process', [AttendanceController::class, 'processScan'])->name('attendance.process');
+
+        // RUTE UNTUK SERTIFIKAT
+        Route::get('/certificates/{session}', [CertificateController::class, 'index'])->name('certificates.index');
+        Route::post('/certificates/{registration}/upload', [CertificateController::class, 'upload'])->name('certificates.upload');
     });
 
     // --- Grup Rute Khusus Tim Keuangan ---
@@ -59,3 +65,4 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+

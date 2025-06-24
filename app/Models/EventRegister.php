@@ -49,4 +49,10 @@ class EventRegister extends Model
     {
         return $this->belongsTo(Status::class);
     }
+
+    public function certificate()
+    {
+        // PERBAIKAN: Relasi hasOne yang sederhana
+        return $this->hasOne(Certificate::class, 'event_register_id');
+    }
 }

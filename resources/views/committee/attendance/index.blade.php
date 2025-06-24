@@ -1,34 +1,53 @@
 @extends('layouts.master')
-@section('title', 'Kelola Kehadiran')
+@section('title', 'Kelola Sesi')
 
 @section('web-content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Panitia /</span> Kelola Kehadiran</h4>
+    {{-- Changed the title to be more generic as it handles both attendance and certificates --}}
+    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Panitia /</span> Kelola Sesi</h4>
     <div class="card">
-        <h5 class="card-header">Pilih Sesi untuk Absensi</h5>
+        <h5 class="card-header">Pilih Sesi untuk Absensi atau Kelola Sertifikat</h5>
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
-                    <tr><th>Judul Sesi</th><th>Event Induk</th><th>Jadwal</th><th>Aksi</th></tr>
+                    <tr>
+                        <th>Judul Sesi</th>
+                        <th>Event Induk</th>
+                        <th>Jadwal</th>
+                        <th>Aksi</th>
+                    </tr>
                 </thead>
                 <tbody>
                     @forelse ($sessions as $session)
                     <tr>
                         <td><strong>{{ $session->title }}</strong></td>
                         <td>{{ $session->event->title }}</td>
-                        <td>{{ $session->start_datetime->format('d M Y, H:i') }}</td>
+                        {{-- Make sure the start_datetime is cast as a Carbon/DateTime object in your EventSession model --}}
+                        <td>{{ \Carbon\Carbon::parse($session->start_datetime)->format('d M Y, H:i') }}</td>
                         <td>
-                            <a href="{{ route('committee.attendance.scan', $session->id) }}" class="btn btn-primary btn-sm">
-                                <i class="bx bx-qr-scan me-1"></i> Buka Scanner
-                            </a>
+                            <div class="d-flex">
+                                {{-- Button for Attendance Scanner --}}
+                                <a href="{{ route('committee.attendance.scan', $session) }}" class="btn btn-primary btn-sm me-2">
+                                    <i class="bx bx-qr-scan me-1"></i> Scanner
+                                </a>
+
+                                {{-- THIS IS THE NEW BUTTON THAT FIXES THE ERROR --}}
+                                {{-- It correctly links to the certificate index for THIS specific session --}}
+                                <a href="{{ route('committee.certificates.index', $session) }}" class="btn btn-info btn-sm">
+                                    <i class="bx bxs-file-pdf me-1"></i> Sertifikat
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="4" class="text-center">Tidak ada sesi yang dijadwalkan.</td></tr>
+                    <tr>
+                        <td colspan="4" class="text-center">Tidak ada sesi yang dijadwalkan.</td>
+                    </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+        {{-- Pagination links --}}
         <div class="mt-4 mx-4">{{ $sessions->links() }}</div>
     </div>
 </div>

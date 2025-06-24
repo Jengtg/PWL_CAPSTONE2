@@ -13,24 +13,19 @@ return new class extends Migration
     {
         Schema::create('certificates', function (Blueprint $table) {
             $table->id();
-        
-            // Menggunakan nama dan tipe data yang benar
-            $table->unsignedBigInteger('event_register_user_id');
-            $table->unsignedBigInteger('event_register_event_session_id');
+            
+            // PERUBAHAN: Sekarang hanya menggunakan satu foreign key
+            $table->foreignId('event_register_id')
+                  ->unique() // Memastikan satu pendaftaran hanya punya satu sertifikat
+                  ->constrained('event_register')
+                  ->onDelete('cascade');
         
             $table->string('file_path');
+            $table->string('file_name');
             $table->timestamps();
-        
-            // Mereferensikan ke kolom yang benar di tabel 'event_register'
-            $table->foreign(
-                ['event_register_user_id', 'event_register_event_session_id'],
-                'certificates_event_register_fk' // Anda bisa menggunakan nama ini atau yang lebih pendek
-            )
-            ->references(['user_id', 'event_session_id'])->on('event_register')
-            ->onDelete('cascade')
-            ->onUpdate('cascade');
         });
     }
+    
 
     /**
      * Reverse the migrations.
